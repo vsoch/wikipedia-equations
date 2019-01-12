@@ -1,32 +1,6 @@
 # helpers.py, useful helper functions for wikipedia analysis
 # We want to represent known symbols (starting with //) as words, the rest characters
 
-
-
-def save_pretty_json(dict_obj,output_file):
-    with open(output_file, 'w') as outfile:
-        json.dump(dict_obj,outfile)
-
-def write_file(filename, content, mode="w"):
-    with open(filename, mode) as filey:
-        if isinstance(content, list):
-            for item in content:
-                filey.writelines(content)
-        else:
-            filey.writelines(content)
-    return filename
-
-def get_attribute(entry, name, default=[]):
-    '''A helper to get an attribute from an object, if it exists.
-       If not, return some default.'''
-    try:
-        if hasattr(entry, name):
-            return getattr(entry, name)    
-    except KeyError:
-        pass
-    return default
-
-
 def extract_tokens(tex):
     '''walk through a LaTeX string, and grab chunks that correspond with known
        identifiers, meaning anything that starts with \ and ends with one or

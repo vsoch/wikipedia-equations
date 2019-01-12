@@ -2,12 +2,8 @@
 
 from bs4 import BeautifulSoup
 from wikipedia import WikipediaPage
-from helpers import ( 
-    update_method_name, 
-    save_pretty_json, 
-    write_file, 
-    get_attribute
-)
+from helpers import update_method_name
+from wordfish.utils import save_pretty_json, write_file, get_attribute
 import pickle
 import json
 import re
@@ -53,7 +49,7 @@ disambiguations = (
     ('MetaNSUE', 'Meta-analysis')
 )
 
-removals = ["The Unscrambler",
+removals = ['The Unscrambler',
             "Player wins",
             "Understanding the patterns in Big Data 'dark matter' with GT data mining"] # missing a url, doesn't parse
 
@@ -137,7 +133,7 @@ pickle.dump(equations, open('wikipedia_statistics_equations.pkl', 'wb'))
 # len(equations)
 # 1900
 
-## Step 4: Save sentences ######################################################
+## Step 4: Word2Vec Model ######################################################
 # Save sentences, still useful to have list of labels too
 
 equation_fh = open("equation_statistics_sentences.txt","w")
@@ -161,3 +157,49 @@ os.system('cat equation_statistics_sentences.txt | wc -l')
 os.system('cat equation_statistics_labels.txt | wc -l')
 # 66436
 # 66436
+
+# Now build model - we use all data to train
+
+from wordfish.analysis import ( export_vectors, TrainEquations, TrainCharacters )
+
+## Latex expressions, and symbols
+
+sentences = TrainEquations(text_files=["equation_statistics_sentences.txt"],
+                           remove_stop_words=False,
+                           remove_non_english_chars=False)
+model = Word2Vec(sentences, size=300, workers=8, min_count=1)
+
+# Save model to file
+base_dir = os.getcwd()
+output_dir = os.path.join(base_dir, 'models')
+if not os.path.exists(output_dir):
+    os.mkdir(output_dir)
+
+model.save("%s/wikipedia_statistics_equations.word2vec" % output_dir)
+
+# Export vectors
+vectors_dir = "%s/vectors" % base_dir
+if not os.path.exists(vectors_dir):
+    os.mkdir(vectors_dir)
+
+vectors = extract_vectors(model)
+# vectors.shape
+# (3420, 300)
+
+vectors.to_csv('%s/wikipedia_statistics_equation_character_vectors.tsv' %vectors_dir, sep='\t')
+
+# The next step is to map math equations to this space, see the math subfolder,
+# and then the analysis subfolder
+
+## Finally, just characters
+characters = TrainCharacters(text_files=["equation_statistics_sentences.txt"],
+                             remove_stop_words=False,
+                             remove_non_english_chars=False)
+characterModel = Word2Vec(characters, size=300, workers=8, min_count=1)
+characterModel.save("%s/wikipedia_statistics_characters.word2vec" % output_dir)
+characterVectors = extract_vectors(characterModel)
+# vectors.shape
+# characterVectors.shape
+# (96, 300)
+
+characterVectors.to_csv('%s/wikipedia_statistics_single_character_vectors.tsv' %vectors_dir, sep='\t')

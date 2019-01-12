@@ -8,14 +8,67 @@ analysis file, now represented at [statisticsAnalysis.py](statisticsAnalysis.py)
 step is to build a word2vec model that has character vectors derived from a huge corpus
 of equations.
 
+## Summary of Files Included
+
+Below includes a summary of files included. For more detail, please read the following section.
+
+### Preprocessing
+
+The following scripts were used to generate the data, and run the analysis:
+
+ - [helpers.py](helpers.py)
+ - [statisticsAnalysis.py](statisticsAnalysis.py)
+
+The following are relevant to preprocessing:
+
+ - [wikipedia_statistics_articles.txt](wikipedia_statistics_articles.txt) is the final list of wikipedia pages parsed. You would only be interested in this if you want to recreate the data and need to scrape Wikipedia.
+
+### Raw Data
+
+The following are raw data extracted from the Wikipedia articles. The json/pkl combinations are the same data saved in different formats:
+
+ - [wikipedia_statistics_articles.json](wikipedia_statistics_articles.json) complete metadata for each article, including summary text, links, categories, etc. This is where you could find text from the page to associate equations with. 
+ - [wikipedia_statistics_articles.pkl](wikipedia_statistics_articles.pkl)
+ - [wikipedia_statistics_equations.json](wikipedia_statistics_equations.json) the raw equations
+ - [wikipedia_statistics_equations.pkl](wikipedia_statistics_equations.pkl)
+
+### Processed Data
+
+The following are akin to training data, equations (the "sentences") with labels:
+
+ - [equation_statistics_sentences.txt](equation_statistics_sentences.txt) are equations from the articles, with one equation per line. We call them "sentences" because word2vec treats them as such.
+ - [equation_statistics_labels.txt](equation_statistics_labels.txt) is one label per equation sentence, the article (page) from where the article came from.
+
+### Analysis
+
+The following folders are relevant to word2vec, including vectors and models, and my sample analysis notebook
+
+ - [vectors](vectors) is the exported vectors data, in both tsv and pickle.
+ - [models](models) include the word2vec models
+ - [tsne_wikipedia_statistics_analysis.ipynb](tsne_wikipedia_statistics_analysis.ipynb)
+
+
 ## Overall Strategy
 
-The general goal is to:
+You are free to use this data as you please! The approach I took is the following.
 
- 1. Create word embeddings using (some set) of equations from wikipedia
- 2. Create embeddings based on the article summaries 
- 3. Link the two
+ 1. Create a word2vec model using (some set) of equations from wikipedia
+ 2. Use the character (latex token) embeddings to map a set of topics (via their equations) to the model space 
+ 3. compare similarity of the topics
 
+For a first shot, I did all of the above with *just* the statistics articles, however
+while I think this would build a good model of the character relationships (over 66K equations present!)
+there isn't enough specificity for kinds of math equations in the articles, so you get a clustering
+(TSNE) that looks like this:
+
+![img/tsne_statistics_articles.png](img/tsne_statistics_articles.png)
+
+This likely means that the articles each have a varied set of equation types (which is logical) 
+with a few articles representing a specific kind of math equation (the cleaner clusters around the
+outside). What that tells us is that while the model might be good as a base, we need to
+generate topic equation embeddings from a more meaningful set. This second set (portion of work)
+is in the  [math](../math) directory. Here we will continue to describe generating the overall 
+model.
 
 ## 1. Create List of Statistics Articles
 
@@ -62,3 +115,22 @@ At the end of this step, we have a data structure with indices as article name,
 and indexing into a list of equations that were extracted. We save both as
 [wikipedia_statistics_equations.json](wikipedia_statistics_equations.json) and
 [wikipedia_statistics_equations.pkl](wikipedia_statistics_equations.pkl).
+
+## 4. Word2Vec Model
+
+The first step here was to extract "sentences" of the equations, meaning a text
+file of equation "sentences," where each sentence is a set of characters (or LaTeX symbol)
+delimited by white spaces. This was first done by way of calling the 
+[helpers](helpers.py) function `extract_tokens`, but ultimately done by the
+same function integrated into the class `TrainEquations` now a part of wordfish.
+Before we run `TrainEquations`, we have saved a single file with every extracted equation sentence, [equation_statistics_sentences.txt](equation_statistics_sentences.txt), and one for the labels, 
+[equation_statistics_labels.txt](equation_statistics_labels.txt), respectively.
+
+With these sentences, I could then use the `TrainEquations` method from wordfish
+to break apart the equation sentences by single character or LaTex symbol (e.g., `/begin`)
+and then build the Word2Vec model from it.
+
+After this step we have:
+
+ - [word2vec models](models) to describe either the entire wikipedia corpus, or subset of domains (pages)
+ - [vectors of the embeddings](vectors) that represent the embeddings for the tokens, or individual characters
