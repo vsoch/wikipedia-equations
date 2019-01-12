@@ -1,5 +1,7 @@
 # Equation Mapping
 
+[![DOI](https://zenodo.org/badge/165427328.svg)](https://zenodo.org/badge/latestdoi/165427328)
+
 This is a dataset that uses word2vec to extract embeddings to describe equations
 from statistics and math articles from wikipedia. We will do this for groups of links
 that generally fall into these categories:
