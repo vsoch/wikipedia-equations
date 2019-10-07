@@ -110,4 +110,7 @@ for pair in pages:
 
 # The next step is to load these equations, and map them to the space
 # of characters generated from the statistics model. See the "analysis"
-# subfolder for these next steps.
+# subfolder in this folder: https://github.com/vsoch/arxiv-equations/tree/master/wikipedia/analysis
+# for next steps. Note that this is intended to serve as a general guide only,
+# I am not a data scientist nor do I aspire to be one and I didn't spend
+# much time developing methods for modeling.

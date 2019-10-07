@@ -1,7 +1,7 @@
 # Equation Mapping: Math
 
 Here we will derive vectors based on equations from these math topics. While
-I ultimately will just want to map these equations to the [statistics](statistics)
+I ultimately will just want to map these equations to the [statistics](../statistics)
 space, I will also generate the same character embeddings here to be consistent.
 
 # Step 1. Get equations from Wikipedia
@@ -88,7 +88,7 @@ and [wikipedia_math_equations.pkl](wikipedia_math_equations.pkl).
 
 At this point, we would actually want to give the equations to the statistics model,
 and then generate embeddings for our math equations based on the statistics
-character embeddings. I haven't done that yet, but instead I've
+character embeddings. **I haven't done that yet**, but instead I've
 created an example showing how to do this for the math equations.
 With our equations loaded, we *could* now use the wordfish `TrainEquations` class to
 take in the list of equations, and generate a model. That comes down to this:
